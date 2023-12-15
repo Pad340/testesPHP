@@ -16,7 +16,7 @@ class User
 
     }
 
-    public function boostrap()
+    public function boostrap(): User
     {
         $this->user->name = filter_var($_POST['name'], FILTER_SANITIZE_SPECIAL_CHARS);
         $filteredEmail = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
@@ -29,17 +29,19 @@ class User
         $this->user->password = password_hash($_POST['password'], PASSWORD_DEFAULT);
         $this->user->dateBirth = $_POST['dateBirth'];
         $this->user->number = filter_var($_POST['number']);
+
+        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $this->user->ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        } else {
+            $this->user->ip = $_SERVER['REMOTE_ADDR'];
+        }
+
+        return $this;
     }
 
-    public function register(string $name, string $email, string $password, string $dateBirth, string $number): bool
+    public function register(string $name, string $email, string $password, string $dateBirth, string $number, string $ip): bool
     {
         try {
-            if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-                $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-            } else {
-                $ip = $_SERVER['REMOTE_ADDR'];
-            }
-
             $stmt = Connect::getInstance()->prepare("INSERT INTO user (name, email, password, date_birth, number, ip)
                       VALUES (:name, :email, :password, :date_birth, :number, :ip)");
 
