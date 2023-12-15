@@ -39,18 +39,18 @@ class User
         return $this;
     }
 
-    public function register(string $name, string $email, string $password, string $dateBirth, string $number, string $ip): bool
+    public function register(): bool
     {
         try {
             $stmt = Connect::getInstance()->prepare("INSERT INTO user (name, email, password, date_birth, number, ip)
                       VALUES (:name, :email, :password, :date_birth, :number, :ip)");
 
-            $stmt->bindParam(':name', $name);
-            $stmt->bindParam(':email', $email);
-            $stmt->bindParam(':password', $password);
-            $stmt->bindParam(':date_birth', $dateBirth);
-            $stmt->bindParam(':number', $number);
-            $stmt->bindParam(':ip', $ip);
+            $stmt->bindParam(':name', $this->user->name);
+            $stmt->bindParam(':email', $this->user->email);
+            $stmt->bindParam(':password', $this->user->password);
+            $stmt->bindParam(':date_birth', $this->user->dateBirth);
+            $stmt->bindParam(':number', $this->user->number);
+            $stmt->bindParam(':ip', $this->user->ip);
 
             $stmt->execute();
 
@@ -98,17 +98,17 @@ class User
         }
     }
 
-    public function update(int $id, string $name, string $email, string $password, string $dateBirth, string $number): bool
+    public function update(): bool
     {
         try {
             $stmt = Connect::getInstance()->prepare("UPDATE user SET name = :name,
                 email = :email, password = :password, date_birth = :date_birth,  number = :number WHERE id = {$id}");
 
-            $stmt->bindParam(':name', $name);
-            $stmt->bindParam(':email', $email);
-            $stmt->bindParam(':password', $password);
-            $stmt->bindParam(':date_birth', $dateBirth);
-            $stmt->bindParam(':number', $number);
+            $stmt->bindParam(':name', $this->user->name);
+            $stmt->bindParam(':email', $this->user->email);
+            $stmt->bindParam(':password', $this->user->password);
+            $stmt->bindParam(':date_birth', $this->user->dateBirth);
+            $stmt->bindParam(':number', $this->user->number);
 
             $stmt->execute();
 
