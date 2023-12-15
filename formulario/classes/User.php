@@ -8,9 +8,6 @@ require __DIR__ . "/Connect.php";
 
 class User
 {
-    /** @var User */
-    private $user;
-
     public function __construct()
     {
 
@@ -18,22 +15,22 @@ class User
 
     public function boostrap(): User
     {
-        $this->user->name = filter_var($_POST['name'], FILTER_SANITIZE_SPECIAL_CHARS);
+        $this->name = filter_var($_POST['name'], FILTER_SANITIZE_SPECIAL_CHARS);
         $filteredEmail = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
         if ($filteredEmail !== false) {
-            $this->user->email = $filteredEmail;
+            $this->email = $filteredEmail;
         } else {
             echo "<p>E-mail inválido.</p>";
             die();
         }
-        $this->user->password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-        $this->user->dateBirth = $_POST['dateBirth'];
-        $this->user->number = filter_var($_POST['number']);
+        $this->password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+        $this->dateBirth = $_POST['dateBirth'];
+        $this->number = filter_var($_POST['number']);
 
         if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $this->user->ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+            $this->ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
         } else {
-            $this->user->ip = $_SERVER['REMOTE_ADDR'];
+            $this->ip = $_SERVER['REMOTE_ADDR'];
         }
 
         return $this;
@@ -45,12 +42,12 @@ class User
             $stmt = Connect::getInstance()->prepare("INSERT INTO user (name, email, password, date_birth, number, ip)
                       VALUES (:name, :email, :password, :date_birth, :number, :ip)");
 
-            $stmt->bindParam(':name', $this->user->name);
-            $stmt->bindParam(':email', $this->user->email);
-            $stmt->bindParam(':password', $this->user->password);
-            $stmt->bindParam(':date_birth', $this->user->dateBirth);
-            $stmt->bindParam(':number', $this->user->number);
-            $stmt->bindParam(':ip', $this->user->ip);
+            $stmt->bindParam(':name', $this->name);
+            $stmt->bindParam(':email', $this->email);
+            $stmt->bindParam(':password', $this->password);
+            $stmt->bindParam(':date_birth', $this->dateBirth);
+            $stmt->bindParam(':number', $this->number);
+            $stmt->bindParam(':ip', $this->ip);
 
             $stmt->execute();
 
@@ -101,14 +98,15 @@ class User
     public function update(): bool
     {
         try {
+            $id = $_GET["id"];
             $stmt = Connect::getInstance()->prepare("UPDATE user SET name = :name,
                 email = :email, password = :password, date_birth = :date_birth,  number = :number WHERE id = {$id}");
 
-            $stmt->bindParam(':name', $this->user->name);
-            $stmt->bindParam(':email', $this->user->email);
-            $stmt->bindParam(':password', $this->user->password);
-            $stmt->bindParam(':date_birth', $this->user->dateBirth);
-            $stmt->bindParam(':number', $this->user->number);
+            $stmt->bindParam(':name', $this->name);
+            $stmt->bindParam(':email', $this->email);
+            $stmt->bindParam(':password', $this->password);
+            $stmt->bindParam(':date_birth', $this->dateBirth);
+            $stmt->bindParam(':number', $this->number);
 
             $stmt->execute();
 

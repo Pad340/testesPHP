@@ -10,7 +10,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 if ($user = (new User())->listar()[0]) {
-    echo "<p>Dados salvos com sucesso!</p><br>";
 
     echo "<p>Nome: {$user['name']}</p>";
     echo "<p>Email: {$user['email']}</p>";

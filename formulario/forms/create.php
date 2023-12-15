@@ -1,5 +1,5 @@
 <form name="post" action="./" method="post">
-    <p style="margin-bottom: 10px; text-align: right"><a href="./" title="Atualizar">Atualizar</a></p>
+    <p style="margin-bottom: 10px"><a href="./" title="Atualizar">Atualizar</a></p>
     <div>
         <label for="name">Nome:
             <input type="text" name="name" placeholder="Nome:" required/>

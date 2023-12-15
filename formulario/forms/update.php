@@ -14,7 +14,7 @@
         </label>
         <br><br>
         <label for="dateBirth">Data de nascimento:
-            <input type="date" name="dateBirth" value="<?= $user["dateBirth"] ?>"/>
+            <input type="date" name="dateBirth" value="<?= $user["date_birth"] ?>"/>
         </label>
         <br><br>
         <label for="number">Número de telefone:
