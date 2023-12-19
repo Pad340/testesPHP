@@ -9,7 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $user->update();
 }
 
-if ($user = (new User())->listar()[0]) {
+if ($user = (new User())->listarId()[0]) {
 
     echo "<p>Nome: {$user['name']}</p>";
     echo "<p>Email: {$user['email']}</p>";

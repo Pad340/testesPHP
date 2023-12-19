@@ -4,6 +4,7 @@ use classes\User;
 
 require __DIR__ . "/classes/User.php";
 
+echo "<p><a href='logar.php'>Login</a></p>";
 include __DIR__ . "/forms/create.php";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {

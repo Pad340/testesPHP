@@ -58,16 +58,16 @@ class User
         }
     }
 
-    public function read(): ?array
+    public function read(string $columns = "*"): ?array
     {
         try {
-            $stmt = Connect::getInstance()->prepare("SELECT * FROM user");
+            $stmt = Connect::getInstance()->prepare("SELECT {$columns} FROM user");
             $stmt->execute();
 
             // Obtém e retorna o primeiro resultado como um objeto User ou null se não houver resultado
             $user = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Retorna o objeto User ou null
+            // Retorna o $user ou null
             return $user !== false ? $user : null;
 
         } catch (PDOException $exception) {
@@ -77,17 +77,33 @@ class User
         }
     }
 
-    public function listar(): ?array
+    public function listarId(string $columns = "*"): ?array
     {
         try {
             $id = $_GET["id"];
-            $stmt = Connect::getInstance()->prepare("SELECT * FROM user WHERE id = {$id}");
+            $stmt = Connect::getInstance()->prepare("SELECT {$columns} FROM user WHERE id = {$id}");
             $stmt->execute();
 
             $user = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             return $user !== false ? $user : null;
 
+        } catch (PDOException $exception) {
+            // Logar ou tratar o erro de maneira apropriada
+            error_log("Erro na obtenção de dados do banco de dados: " . $exception->getMessage());
+            return null;
+        }
+    }
+
+    public function listarEmail(string $email): ?array
+    {
+        try {
+            $stmt = Connect::getInstance()->prepare("SELECT * FROM user WHERE email = '{$email}'");
+            $stmt->execute();
+
+            $user = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return $user !== false ? $user : null;
         } catch (PDOException $exception) {
             // Logar ou tratar o erro de maneira apropriada
             error_log("Erro na obtenção de dados do banco de dados: " . $exception->getMessage());
@@ -129,6 +145,19 @@ class User
         } catch (PDOException $exception) {
             error_log("Erro ao salvar no banco de dados: " . $exception->getMessage());
             return false;
+        }
+    }
+
+    public function login(string $email, string $password)
+    {
+        if ($user = (new User())->listarEmail($email)) {
+            if (password_verify($password, $user[0]['password'])) {
+                echo "<p>Login efetuado</p>";
+            } else {
+                echo "<p>Senha incorreta!</p>";
+            }
+        } else {
+            echo "<p>Email não cadastrado!</p>";
         }
     }
 }
