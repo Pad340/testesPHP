@@ -1,6 +1,7 @@
 <?php
 
 namespace classes;
+
 use PDO;
 use PDOException;
 
@@ -10,7 +11,6 @@ class User
 {
     public function __construct()
     {
-
     }
 
     public function boostrap(): User
@@ -150,14 +150,46 @@ class User
 
     public function login(string $email, string $password)
     {
-        if ($user = (new User())->listarEmail($email)) {
-            if (password_verify($password, $user[0]['password'])) {
+        if ($user = (new User())->listarEmail($email)) { // verificar se o email está cadastrado
+            if ($this->contagemTentativa($user[0]['id']) >= 10) {
+                echo "<p>Você atingiu o limite de 10 tentativas. Tente novamente em 2 horas.</p>";
+                sleep(60 * 60 * 2);
+            }
+            if (password_verify($password, $user[0]['password'])) { // verificar se a senha digitada é correta para aquele email
                 echo "<p>Login efetuado</p>";
             } else {
                 echo "<p>Senha incorreta!</p>";
+                $this->tentativaSenha($user[0]['id']);
             }
+
         } else {
             echo "<p>Email não cadastrado!</p>";
+        }
+    }
+
+    public function tentativaSenha($idUser): bool
+    {
+        try {
+            $stmt = Connect::getInstance()->prepare("INSERT INTO senhainvalida (id_user) VALUES($idUser)");
+            $stmt->execute();
+
+            return true;
+        } catch (PDOException $exception) {
+            var_dump($exception);
+            return false;
+        }
+    }
+
+    public function contagemTentativa($idUser): ?int
+    {
+        try {
+            $stmt = Connect::getInstance()->prepare("SELECT * FROM senhainvalida WHERE id_user = $idUser");
+            $stmt->execute();
+
+            return $stmt->rowCount();
+        } catch (PDOException $exception) {
+            var_dump($exception);
+            return null;
         }
     }
 }

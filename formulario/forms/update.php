@@ -20,6 +20,7 @@
         <label for="number">Número de telefone:
             <input type="tel" name="number" value="<?= $user["number"] ?>"/>
         </label>
+        <br><br>
     </div>
     <input type="submit" name="enviar" value="Atualizar"/>
 </form>

@@ -7,6 +7,7 @@
         <label for="password">Senha:
             <input type="password" name="password" placeholder="Senha:" required/>
         </label>
+        <br><br>
     </div>
     <input type="submit" name="login" value="Login"/>
 </form>

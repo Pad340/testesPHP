@@ -20,6 +20,7 @@
         <label for="number">Número de telefone:
             <input type="tel" name="number" placeholder="Número de telefone:" required/>
         </label>
+        <br><br>
     </div>
     <input type="submit" name="enviar" value="Cadastrar"/>
 </form>
