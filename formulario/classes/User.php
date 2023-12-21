@@ -18,13 +18,20 @@ class User
         $this->name = filter_var($_POST['name'], FILTER_SANITIZE_SPECIAL_CHARS);
         $filteredEmail = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
         if ($filteredEmail !== false) {
-            $this->email = $filteredEmail;
+            if (!$this->listarEmail($filteredEmail)) {
+                $this->email = $filteredEmail;
+            } else {
+                echo "<p>Este email já está cadastrado.</p>";
+                die();
+            }
         } else {
-            echo "<p>E-mail inválido.</p>";
+            echo "<p>Email inválido.</p>";
             die();
         }
-        $this->password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-        $this->dateBirth = $_POST['dateBirth'];
+        if ($this->validaSenha($_POST['password'])) {
+            $this->password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+        }
+        $this->dateBirth = filter_var($_POST['dateBirth']);
         $this->number = filter_var($_POST['number']);
 
         if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
@@ -32,7 +39,6 @@ class User
         } else {
             $this->ip = $_SERVER['REMOTE_ADDR'];
         }
-
         return $this;
     }
 
@@ -133,7 +139,7 @@ class User
         }
     }
 
-    public function delete(): bool
+    public function deleteUser(): bool
     {
         try {
             $id = $_GET["id"];
@@ -151,17 +157,15 @@ class User
     public function login(string $email, string $password)
     {
         if ($user = (new User())->listarEmail($email)) { // verificar se o email está cadastrado
-            if ($this->contagemTentativa($user[0]['id']) >= 10) {
-                echo "<p>Você atingiu o limite de 10 tentativas. Tente novamente em 2 horas.</p>";
-                sleep(60 * 60 * 2);
-            }
-            if (password_verify($password, $user[0]['password'])) { // verificar se a senha digitada é correta para aquele email
+            if (password_verify($password, $user[0]['password']) && $this->contagemTentativa($user[0]['id']) <= 9) { // verificar se a senha digitada é correta para aquele email
                 echo "<p>Login efetuado</p>";
+            } else if ($this->contagemTentativa($user[0]['id']) > 9) {
+                echo "<p>Você atingiu o limite de 10 tentativas. Tente novamente em 2 horas.</p>";
             } else {
                 echo "<p>Senha incorreta!</p>";
                 $this->tentativaSenha($user[0]['id']);
             }
-
+            var_dump($this->contagemTentativa($user[0]['id']));
         } else {
             echo "<p>Email não cadastrado!</p>";
         }
@@ -180,10 +184,10 @@ class User
         }
     }
 
-    public function contagemTentativa($idUser): ?int
+    public function contagemTentativa(string $idUser): ?int
     {
         try {
-            $stmt = Connect::getInstance()->prepare("SELECT * FROM senhainvalida WHERE id_user = $idUser");
+            $stmt = Connect::getInstance()->prepare("SELECT * FROM senhainvalida WHERE id_user = {$idUser} AND horario >= NOW() - INTERVAL 26 HOUR");
             $stmt->execute();
 
             return $stmt->rowCount();
@@ -191,5 +195,21 @@ class User
             var_dump($exception);
             return null;
         }
+    }
+
+    public function validaSenha($password): bool
+    {
+        if (mb_strlen($password) >= 8 && mb_strlen($password) <= 16) { // tamanho
+            if (is_numeric(filter_var($password, FILTER_SANITIZE_NUMBER_INT))) { // tem numero?
+                
+                return true;
+            } else {
+                echo "<p>A senha deve conter pelo menos um número.</p>";
+            }
+        } else {
+            echo "<p>A senha deve conter de 8 à 16 caracteres.</p>";
+        }
+
+        return false;
     }
 }
