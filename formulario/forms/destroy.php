@@ -5,6 +5,6 @@ session_unset();
 
 session_destroy();
 
-header("Location: /../testesPHP/formulario/logar.php");
+header("Location: /testesPHP/formulario/logar.php");
 
 die();
