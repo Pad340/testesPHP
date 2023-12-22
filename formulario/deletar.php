@@ -4,7 +4,7 @@ use classes\User;
 
 require __DIR__ . "/classes/User.php";
 
-if ($user = (new User())->delete()) {
+if ($user = (new User())->deleteUser()) {
     echo "<p>Dados deletados com sucesso!</p><br>";
 }
 

@@ -5,6 +5,7 @@ namespace classes;
 use PDO;
 use PDOException;
 
+require __DIR__ . "/Session.php";
 require __DIR__ . "/Connect.php";
 
 class User
@@ -15,7 +16,11 @@ class User
 
     public function boostrap(): User
     {
-        $this->name = filter_var($_POST['name'], FILTER_SANITIZE_SPECIAL_CHARS);
+        if ($this->validaNome(filter_var($_POST['name'], FILTER_SANITIZE_SPECIAL_CHARS))) {
+            $this->name = $_POST['name'];
+        } else {
+            die();
+        }
         $filteredEmail = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
         if ($filteredEmail !== false) {
             if (!$this->listarEmail($filteredEmail)) {
@@ -30,6 +35,8 @@ class User
         }
         if ($this->validaSenha($_POST['password'])) {
             $this->password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+        } else {
+            die();
         }
         $this->dateBirth = filter_var($_POST['dateBirth']);
         $this->number = filter_var($_POST['number']);
@@ -124,11 +131,11 @@ class User
             $stmt = Connect::getInstance()->prepare("UPDATE user SET name = :name,
                 email = :email, password = :password, date_birth = :date_birth,  number = :number WHERE id = {$id}");
 
-            $stmt->bindParam(':name', $this->name);
-            $stmt->bindParam(':email', $this->email);
-            $stmt->bindParam(':password', $this->password);
-            $stmt->bindParam(':date_birth', $this->dateBirth);
-            $stmt->bindParam(':number', $this->number);
+            $stmt->bindParam(':name', $_POST['name']);
+            $stmt->bindParam(':email', $_POST['email']);
+            $stmt->bindParam(':password', $_POST['password']);
+            $stmt->bindParam(':date_birth', $_POST['dateBirth']);
+            $stmt->bindParam(':number', $_POST['number']);
 
             $stmt->execute();
 
@@ -154,18 +161,19 @@ class User
         }
     }
 
-    public function login(string $email, string $password)
+    public function login(string $email, string $password): void
     {
         if ($user = (new User())->listarEmail($email)) { // verificar se o email está cadastrado
             if (password_verify($password, $user[0]['password']) && $this->contagemTentativa($user[0]['id']) <= 9) { // verificar se a senha digitada é correta para aquele email
                 echo "<p>Login efetuado</p>";
+                (new Session())->set("userLogin", ["userId" => $user[0]['id'], "userName" => $user[0]['name']]);
+                var_dump($_SESSION);
             } else if ($this->contagemTentativa($user[0]['id']) > 9) {
                 echo "<p>Você atingiu o limite de 10 tentativas. Tente novamente em 2 horas.</p>";
             } else {
                 echo "<p>Senha incorreta!</p>";
                 $this->tentativaSenha($user[0]['id']);
             }
-            var_dump($this->contagemTentativa($user[0]['id']));
         } else {
             echo "<p>Email não cadastrado!</p>";
         }
@@ -199,17 +207,30 @@ class User
 
     public function validaSenha($password): bool
     {
-        if (mb_strlen($password) >= 8 && mb_strlen($password) <= 16) { // tamanho
-            if (is_numeric(filter_var($password, FILTER_SANITIZE_NUMBER_INT))) { // tem numero?
-                
-                return true;
-            } else {
-                echo "<p>A senha deve conter pelo menos um número.</p>";
+        // tamanho
+        if (mb_strlen($password) >= 8 && mb_strlen($password) <= 16) {
+            // tem numero, letra M e m, e catactere?
+            if (!(is_numeric(filter_var($password, FILTER_SANITIZE_NUMBER_INT)) // true se num
+                && preg_match('/[A-Z]/', $password) // true se M
+                && preg_match('/[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]/', $password) // true se caracter
+                && preg_match('/[a-z]/', $password))) { // true se m
+                echo "<p>A senha deve conter pelo menos uma letra maiuscula, uma minuscula, um número e um caractere especial.</p>";
+                return false;
             }
         } else {
             echo "<p>A senha deve conter de 8 à 16 caracteres.</p>";
+            return false;
         }
+        return true;
+    }
 
-        return false;
+    public function validaNome($name): bool
+    {
+        if (is_numeric(filter_var($name, FILTER_SANITIZE_NUMBER_INT))
+            || preg_match('/[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]/', $name)) {
+            echo "<p>O nome não deve conter números, nem catacteres especiais.</p>";
+            return false;
+        }
+        return true;
     }
 }

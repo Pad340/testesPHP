@@ -1,5 +1,4 @@
 <form name="post" method="post">
-    <p style="margin-bottom: 10px; text-align: right"><a href="./" title="Atualizar">Atualizar</a></p>
     <div>
         <label for="name">Nome:
             <input type="text" name="name" value="<?= $user["name"] ?>"/>
